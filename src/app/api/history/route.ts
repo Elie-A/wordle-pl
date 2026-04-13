@@ -1,4 +1,4 @@
-import { connectDB } from "@/lib/db";
+import { connectDB } from "@/lib/mongoose";
 import DailyWord from "@/models/DailyWord";
 
 export async function GET(req: Request) {

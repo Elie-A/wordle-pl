@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "./page.module.css";
 
 type TileState = "empty" | "green" | "yellow" | "gray";
 
@@ -25,7 +26,10 @@ export default function Home() {
   }
 
   async function submitGuess() {
-    if (guess.length !== length) return;
+    if (guess.length !== length) {
+      setMessage(`Napisz dokładnie ${length} liter.`);
+      return;
+    }
 
     const res = await fetch("/api/guess", {
       method: "POST",
@@ -34,88 +38,140 @@ export default function Home() {
 
     const data = await res.json();
 
-    setBoard((prev) => [...prev, guess.split("")]);
-    setColors((prev) => [...prev, data.result]);
+    if (!res.ok || data.error) {
+      setMessage(data.error || "Wystąpił błąd serwera.");
+      return;
+    }
+
+    const nextBoard = [...board, guess.split("")];
+    const nextColors = [...colors, data.result];
+
+    setBoard(nextBoard);
+    setColors(nextColors);
     setGuess("");
 
     if (data.isWin) {
       setGameOver(true);
       setMessage(`🎉 ${data.word} (${data.gender}) — ${data.example}`);
+      return;
     }
 
-    if (board.length + 1 >= 6 && !data.isWin) {
+    if (nextBoard.length >= 6) {
       setGameOver(true);
-      setMessage("💀 You lost. Try again tomorrow.");
+      setMessage("Niestety, przegrałeś. Spróbuj jutro.");
+      return;
     }
+
+    setMessage("");
   }
 
   function getColorClass(color: TileState) {
     switch (color) {
       case "green":
-        return "bg-green-500";
+        return styles.tileCorrect;
       case "yellow":
-        return "bg-yellow-500";
+        return styles.tilePresent;
       case "gray":
-        return "bg-gray-500";
+        return styles.tileAbsent;
       default:
-        return "bg-gray-200";
+        return styles.tileEmpty;
     }
   }
 
   return (
-    <main className="flex flex-col items-center p-6 gap-4">
-      <h1 className="text-2xl font-bold">Polish Wordle</h1>
+    <main className={styles.page}>
+      <section className={styles.hero}>
+        <span className={styles.badge}>Wordle Polska</span>
+        <div className={styles.heroStripe}>
+          <span />
+          <span />
+        </div>
+        <h1 className={styles.title}>Zgadnij polskie słowo</h1>
+        <p className={styles.subtitle}>
+          Wybierz długość słowa, wpisz swoją propozycję i sprawdź, które litery
+          pasują.
+        </p>
+      </section>
 
-      {/* Length selector */}
-      <select
-        value={length}
-        onChange={(e) => setLength(Number(e.target.value))}
-        className="border p-2"
-      >
-        {[4, 5, 6, 7, 8, 9, 10].map((n) => (
-          <option key={n} value={n}>
-            {n} letters
-          </option>
-        ))}
-      </select>
-
-      {/* Board */}
-      <div className="grid gap-2">
-        {board.map((row, i) => (
-          <div key={i} className="flex gap-2">
-            {row.map((letter, j) => (
-              <div
-                key={j}
-                className={`w-12 h-12 flex items-center justify-center text-white font-bold ${getColorClass(colors[i][j])}`}
-              >
-                {letter.toUpperCase()}
-              </div>
+      <section className={styles.card}>
+        <div className={styles.row}>
+          <label htmlFor="length" className={styles.label}>
+            Długość słowa
+          </label>
+          <select
+            id="length"
+            value={length}
+            onChange={(e) => setLength(Number(e.target.value))}
+            className={styles.select}
+          >
+            {[4, 5, 6, 7, 8, 9, 10].map((n) => (
+              <option key={n} value={n}>
+                {n} liter
+              </option>
             ))}
-          </div>
-        ))}
-      </div>
+          </select>
+        </div>
 
-      {/* Current guess */}
-      {!gameOver && (
-        <>
+        <div className={styles.board}>
+          {board.length === 0 ? (
+            <div className={styles.boardHint}>
+              Zacznij zgadywać — trafienia pojawią się tutaj.
+            </div>
+          ) : (
+            board.map((row, i) => (
+              <div key={i} className={styles.row}>
+                {row.map((letter, j) => (
+                  <div
+                    key={j}
+                    className={`${styles.tile} ${getColorClass(colors[i][j])}`}
+                  >
+                    {letter.toUpperCase()}
+                  </div>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className={styles.controls}>
           <input
             value={guess}
-            onChange={(e) => setGuess(e.target.value.toLowerCase())}
+            onChange={(e) => setGuess(e.target.value.toLocaleLowerCase("pl"))}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !gameOver) {
+                submitGuess();
+              }
+            }}
             maxLength={length}
-            className="border p-2 text-center uppercase"
+            placeholder={`${length} liter`}
+            className={styles.input}
+            disabled={gameOver}
           />
-
           <button
             onClick={submitGuess}
-            className="bg-black text-white px-4 py-2"
+            className={styles.guessButton}
+            disabled={gameOver}
           >
-            Guess
+            Zgadnij
           </button>
-        </>
-      )}
+        </div>
+        <p className={styles.footnote}>
+          Użyj polskich znaków: ą ć ę ł ń ó ś ź ż
+        </p>
 
-      {/* Message */}
-      {message && <p className="mt-4 text-center">{message}</p>}
+        <div className={styles.status}>
+          <div className={styles.stats}>
+            <span>Ruchy</span>
+            <strong>{board.length} / 6</strong>
+          </div>
+          <button onClick={resetGame} className={styles.resetButton}>
+            Nowa gra
+          </button>
+        </div>
+
+        {message && <p className={styles.message}>{message}</p>}
+        <p className={styles.footnote}>Wszystkie słowa są w języku polskim.</p>
+      </section>
     </main>
   );
 }
