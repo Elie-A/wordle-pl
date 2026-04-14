@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "tsx seed.ts",
+    "seed": "tsx scripts/seed.ts",
     "seed:words": "tsx scripts/seed-words.ts",
     "seed:daily": "tsx scripts/seed-daily.ts",
-    "seed:all": "tsx seed.ts"
+    "seed:all": "tsx scripts/seed.ts",
+    "seed:month": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "dotenv": "^16.1.4",

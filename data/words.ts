@@ -310,6 +310,54 @@ export const words: WordSeed[] = [
     gender: "m",
     example: "Wazon z kwiatami stoi na komodzie.",
   },
+  {
+    word: "brzeg",
+    length: 5,
+    gender: "m",
+    example: "Brzeg jeziora był zalesiony.",
+  },
+  {
+    word: "gałąź",
+    length: 5,
+    gender: "f",
+    example: "Gałąź złamała się pod ciężarem śniegu.",
+  },
+  {
+    word: "mleko",
+    length: 5,
+    gender: "n",
+    example: "Mleko stoi na stole.",
+  },
+  {
+    word: "dźwig",
+    length: 5,
+    gender: "m",
+    example: "Dźwig podnosił ciężkie ładunki.",
+  },
+  {
+    word: "sklep",
+    length: 5,
+    gender: "m",
+    example: "Sklep był otwarty do godziny 20.",
+  },
+  {
+    word: "dywan",
+    length: 5,
+    gender: "m",
+    example: "Dywan leżał na podłodze w salonie.",
+  },
+  {
+    word: "palma",
+    length: 5,
+    gender: "f",
+    example: "Palma rosła przy plaży.",
+  },
+  {
+    word: "szyba",
+    length: 5,
+    gender: "f",
+    example: "Szyba okna była czysta.",
+  },
 
   // 6-letter words
   {

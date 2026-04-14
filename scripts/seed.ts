@@ -6,7 +6,7 @@ async function seed() {
   await seedWords({ clearExisting: true });
 
   console.log("Seeding daily word entries...");
-  await seedDaily({ clearExisting: true, count: 3 });
+  await seedDaily({ clearExisting: true, count: 30 });
 }
 
 seed()
