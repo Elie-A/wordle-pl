@@ -7,6 +7,7 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const length = Number(searchParams.get("length"));
+  const reveal = searchParams.get("reveal") === "true";
   const today = new Date().toISOString().split("T")[0];
 
   if (!length || length < 1) {
@@ -38,11 +39,22 @@ export async function GET(req: Request) {
       length,
       wordId: words[0]._id,
     });
+
+    if (reveal) {
+      await daily.populate("wordId");
+    }
+  }
+
+  if (reveal) {
+    return Response.json({
+      word: String(daily.wordId.word).toLocaleLowerCase("pl").normalize("NFC"),
+      gender: daily.wordId.gender,
+      example: daily.wordId.example,
+    });
   }
 
   return Response.json({
     date: today,
     length,
-    // DO NOT SEND WORD
   });
 }

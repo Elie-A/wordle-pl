@@ -61,7 +61,25 @@ export default function Home() {
 
       if (nextBoard.length >= 6) {
         setGameOver(true);
-        setMessage("Niestety, przegrałeś. Spróbuj jutro.");
+
+        try {
+          const revealRes = await fetch(
+            `/api/daily-word?length=${length}&reveal=true`,
+          );
+
+          if (revealRes.ok) {
+            const revealData = await revealRes.json();
+            setMessage(
+              `Niestety, nie udało się. Dzisiejsze słowo to ${revealData.word} (${revealData.gender}) — przykład: ${revealData.example}`,
+            );
+          } else {
+            setMessage("Niestety, przegrałeś. Spróbuj jutro.");
+          }
+        } catch (error) {
+          console.error("reveal word error:", error);
+          setMessage("Niestety, przegrałeś. Spróbuj jutro.");
+        }
+
         return;
       }
 
