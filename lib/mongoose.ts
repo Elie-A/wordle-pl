@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 
 function getMongoUri(): string | undefined {
-  return process.env.NODE_ENV === "production"
-    ? process.env.MONGODB_URI_PROD
-    : process.env.MONGODB_URI;
+  return process.env.MONGODB_URI_PROD || process.env.MONGODB_URI;
 }
 
 interface MongooseGlobal {
