@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./page.module.css";
 
 type TileState = "empty" | "green" | "yellow" | "gray";
@@ -13,10 +13,6 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [gameOver, setGameOver] = useState(false);
 
-  useEffect(() => {
-    resetGame();
-  }, [length]);
-
   function resetGame() {
     setBoard([]);
     setColors([]);
@@ -25,44 +21,55 @@ export default function Home() {
     setGameOver(false);
   }
 
+  function handleLengthChange(nextLength: number) {
+    setLength(nextLength);
+    resetGame();
+  }
+
   async function submitGuess() {
     if (guess.length !== length) {
       setMessage(`Napisz dokładnie ${length} liter.`);
       return;
     }
 
-    const res = await fetch("/api/guess", {
-      method: "POST",
-      body: JSON.stringify({ guess, length }),
-    });
+    try {
+      const res = await fetch("/api/guess", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guess, length }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok || data.error) {
-      setMessage(data.error || "Wystąpił błąd serwera.");
-      return;
+      if (!res.ok || data.error) {
+        setMessage(data.error || "Wystąpił błąd serwera.");
+        return;
+      }
+
+      const nextBoard = [...board, guess.split("")];
+      const nextColors = [...colors, data.result];
+
+      setBoard(nextBoard);
+      setColors(nextColors);
+      setGuess("");
+
+      if (data.isWin) {
+        setGameOver(true);
+        setMessage(`🎉 ${data.word} (${data.gender}) — ${data.example}`);
+        return;
+      }
+
+      if (nextBoard.length >= 6) {
+        setGameOver(true);
+        setMessage("Niestety, przegrałeś. Spróbuj jutro.");
+        return;
+      }
+
+      setMessage("");
+    } catch (error) {
+      console.error("submitGuess error:", error);
+      setMessage("Wystąpił błąd serwera. Spróbuj ponownie później.");
     }
-
-    const nextBoard = [...board, guess.split("")];
-    const nextColors = [...colors, data.result];
-
-    setBoard(nextBoard);
-    setColors(nextColors);
-    setGuess("");
-
-    if (data.isWin) {
-      setGameOver(true);
-      setMessage(`🎉 ${data.word} (${data.gender}) — ${data.example}`);
-      return;
-    }
-
-    if (nextBoard.length >= 6) {
-      setGameOver(true);
-      setMessage("Niestety, przegrałeś. Spróbuj jutro.");
-      return;
-    }
-
-    setMessage("");
   }
 
   function getColorClass(color: TileState) {
@@ -101,7 +108,7 @@ export default function Home() {
           <select
             id="length"
             value={length}
-            onChange={(e) => setLength(Number(e.target.value))}
+            onChange={(e) => handleLengthChange(Number(e.target.value))}
             className={styles.select}
           >
             {[4, 5, 6, 7, 8, 9, 10].map((n) => (
